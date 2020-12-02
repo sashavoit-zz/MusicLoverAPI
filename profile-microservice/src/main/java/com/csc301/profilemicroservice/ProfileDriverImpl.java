@@ -41,24 +41,35 @@ public class ProfileDriverImpl implements ProfileDriver {
 	@Override
 	public DbQueryStatus createUserProfile(String userName, String fullName, String password) {
 		
-		return null;
+		DbQueryStatus mock = new DbQueryStatus("this is my mock message", DbQueryExecResult.QUERY_OK);
+		mock.setData("this is my mock data");
+		return mock;
+		
 	}
 
 	@Override
 	public DbQueryStatus followFriend(String userName, String frndUserName) {
 		
-		return null;
+		DbQueryStatus mock = new DbQueryStatus("this is my mock message", DbQueryExecResult.QUERY_OK);
+		mock.setData("this is my mock data");
+		return mock;
+		
 	}
 
 	@Override
 	public DbQueryStatus unfollowFriend(String userName, String frndUserName) {
 		
-		return null;
+		DbQueryStatus mock = new DbQueryStatus("this is my mock message", DbQueryExecResult.QUERY_OK);
+		mock.setData("this is my mock data");
+		return mock;
 	}
 
 	@Override
 	public DbQueryStatus getAllSongFriendsLike(String userName) {
 			
-		return null;
+		DbQueryStatus mock = new DbQueryStatus("this is my mock message", DbQueryExecResult.QUERY_OK);
+		mock.setData("this is my mock data");
+		return mock;
+		
 	}
 }

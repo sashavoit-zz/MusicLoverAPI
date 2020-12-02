@@ -1,5 +1,6 @@
 package com.csc301.profilemicroservice;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.csc301.profilemicroservice.Utils;
+import com.csc301.profilemicroservice.ProfileDriverImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import okhttp3.Call;
@@ -50,30 +52,42 @@ public class ProfileController {
 	public @ResponseBody Map<String, Object> addProfile(@RequestParam Map<String, String> params,
 			HttpServletRequest request) {
 
+		JSONObject body = new JSONObject(Utils.getBody(request));
+		String userName = body.getString(KEY_USER_NAME);
+		String fullName = body.getString(KEY_USER_FULLNAME);
+		String password = body.getString(KEY_USER_PASSWORD);
+		
+		DbQueryStatus status = profileDriver.createUserProfile(userName, fullName, password);
+		
 		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("POST %s", Utils.getUrl(request)));
+		response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
 
-		return null;
+		return response;
 	}
 
 	@RequestMapping(value = "/followFriend/{userName}/{friendUserName}", method = RequestMethod.PUT)
 	public @ResponseBody Map<String, Object> followFriend(@PathVariable("userName") String userName,
 			@PathVariable("friendUserName") String friendUserName, HttpServletRequest request) {
 
-		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
+		DbQueryStatus status = profileDriver.followFriend(userName, friendUserName);
 		
-		return null;
+		Map<String, Object> response = new HashMap<String, Object>();
+		response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
+
+		return response;
+		
 	}
 
 	@RequestMapping(value = "/getAllFriendFavouriteSongTitles/{userName}", method = RequestMethod.GET)
 	public @ResponseBody Map<String, Object> getAllFriendFavouriteSongTitles(@PathVariable("userName") String userName,
 			HttpServletRequest request) {
 
+		DbQueryStatus status = profileDriver.getAllSongFriendsLike(userName);
+		
 		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
+		response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
 
-		return null;
+		return response;
 	}
 
 
@@ -81,10 +95,12 @@ public class ProfileController {
 	public @ResponseBody Map<String, Object> unfollowFriend(@PathVariable("userName") String userName,
 			@PathVariable("friendUserName") String friendUserName, HttpServletRequest request) {
 
+		DbQueryStatus status = profileDriver.unfollowFriend(userName, friendUserName);
+		
 		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
+		response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
 
-		return null;
+		return response;
 	}
 
 	@RequestMapping(value = "/likeSong/{userName}/{songId}", method = RequestMethod.PUT)
@@ -94,7 +110,7 @@ public class ProfileController {
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 
-		return null;
+		return response;
 	}
 
 	@RequestMapping(value = "/unlikeSong/{userName}/{songId}", method = RequestMethod.PUT)
@@ -104,7 +120,7 @@ public class ProfileController {
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 
-		return null;
+		return response;
 	}
 
 	@RequestMapping(value = "/deleteAllSongsFromDb/{songId}", method = RequestMethod.PUT)
@@ -114,6 +130,6 @@ public class ProfileController {
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
 		
-		return null;
+		return response;
 	}
 }
