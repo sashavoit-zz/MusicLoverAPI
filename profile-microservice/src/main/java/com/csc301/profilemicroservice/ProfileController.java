@@ -128,9 +128,16 @@ public class ProfileController {
 			@PathVariable("songId") String songId, HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
+		try {
+			DbQueryStatus status = playlistDriver.likeSong(userName, songId);
+		
+			response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
 
-		return response;
+			return response;
+		}catch(Exception e) {
+			response = Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_GENERIC, null);
+			return response;
+		}
 	}
 
 	@RequestMapping(value = "/unlikeSong/{userName}/{songId}", method = RequestMethod.PUT)
@@ -138,9 +145,16 @@ public class ProfileController {
 			@PathVariable("songId") String songId, HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
+		try {
+			DbQueryStatus status = playlistDriver.unlikeSong(userName, songId);
+		
+			response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
 
-		return response;
+			return response;
+		}catch(Exception e) {
+			response = Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_GENERIC, null);
+			return response;
+		}
 	}
 
 	@RequestMapping(value = "/deleteAllSongsFromDb/{songId}", method = RequestMethod.PUT)
@@ -148,8 +162,15 @@ public class ProfileController {
 			HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("path", String.format("PUT %s", Utils.getUrl(request)));
+		try {
+			DbQueryStatus status = playlistDriver.deleteSongFromDb(songId);
 		
-		return response;
+			response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
+
+			return response;
+		}catch(Exception e) {
+			response = Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_GENERIC, null);
+			return response;
+		}
 	}
 }
