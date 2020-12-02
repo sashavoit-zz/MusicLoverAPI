@@ -75,8 +75,13 @@ public class ProfileDriverImpl implements ProfileDriver {
 						+ "RETURN COUNT(user) as userCount, COUNT(friend) as friendCount";
 				StatementResult res = trans.run(queryStr, parameters("userName", userName, "frndUserName", frndUserName));
 				
-				Record rec = res.next();
-				boolean not404 = (long)rec.asMap().get("userCount") > 0 && (long)rec.asMap().get("friendCount") > 0;
+				boolean not404;
+				if (res.hasNext()) {
+					Record rec = res.next();
+					not404 = (long)rec.asMap().get("userCount") > 0 && (long)rec.asMap().get("friendCount") > 0;
+				}else {
+					not404 = false;
+				}
 				trans.success();
 				
 				ifSuccessful = not404 ? DbQueryExecResult.QUERY_OK : DbQueryExecResult.QUERY_ERROR_NOT_FOUND;
@@ -104,8 +109,13 @@ public class ProfileDriverImpl implements ProfileDriver {
 						+ "RETURN COUNT(user) as userCount, COUNT(friend) as friendCount";
 				StatementResult res = trans.run(queryStr, parameters("userName", userName, "frndUserName", frndUserName));
 				
-				Record rec = res.next();
-				boolean not404 = (long)rec.asMap().get("userCount") > 0 && (long)rec.asMap().get("friendCount") > 0;
+				boolean not404;
+				if (res.hasNext()) {
+					Record rec = res.next();
+					not404 = (long)rec.asMap().get("userCount") > 0 && (long)rec.asMap().get("friendCount") > 0;
+				}else {
+					not404 = false;
+				}
 				trans.success();
 				
 				ifSuccessful = not404 ? DbQueryExecResult.QUERY_OK : DbQueryExecResult.QUERY_ERROR_NOT_FOUND;
@@ -115,7 +125,7 @@ public class ProfileDriverImpl implements ProfileDriver {
 			session.close();
 		}
 		
-		DbQueryStatus status = new DbQueryStatus("follow a friend", ifSuccessful);
+		DbQueryStatus status = new DbQueryStatus("unfollow a friend", ifSuccessful);
 		return status;
 		
 	}
@@ -147,7 +157,7 @@ public class ProfileDriverImpl implements ProfileDriver {
 			session.close();
 		}
 		
-		DbQueryStatus status = new DbQueryStatus("follow a friend", ifSuccessful);
+		DbQueryStatus status = new DbQueryStatus("get all songs friends like", ifSuccessful);
 		status.setData(data);
 		return status;
 		
