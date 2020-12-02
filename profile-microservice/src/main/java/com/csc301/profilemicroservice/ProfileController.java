@@ -51,30 +51,38 @@ public class ProfileController {
 	@RequestMapping(value = "/profile", method = RequestMethod.POST)
 	public @ResponseBody Map<String, Object> addProfile(@RequestParam Map<String, String> params,
 			HttpServletRequest request) {
-
-		JSONObject body = new JSONObject(Utils.getBody(request));
-		String userName = body.getString(KEY_USER_NAME);
-		String fullName = body.getString(KEY_USER_FULLNAME);
-		String password = body.getString(KEY_USER_PASSWORD);
-		
-		DbQueryStatus status = profileDriver.createUserProfile(userName, fullName, password);
-		
 		Map<String, Object> response = new HashMap<String, Object>();
-		response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
-
-		return response;
+		try {
+			JSONObject body = new JSONObject(Utils.getBody(request));
+			String userName = body.getString(KEY_USER_NAME);
+			String fullName = body.getString(KEY_USER_FULLNAME);
+			String password = body.getString(KEY_USER_PASSWORD);
+		
+			DbQueryStatus status = profileDriver.createUserProfile(userName, fullName, password);
+		
+			response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
+			return response;
+		}catch(Exception e) {
+			response = Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_GENERIC, null);
+			return response;
+		}
 	}
 
 	@RequestMapping(value = "/followFriend/{userName}/{friendUserName}", method = RequestMethod.PUT)
 	public @ResponseBody Map<String, Object> followFriend(@PathVariable("userName") String userName,
 			@PathVariable("friendUserName") String friendUserName, HttpServletRequest request) {
 
-		DbQueryStatus status = profileDriver.followFriend(userName, friendUserName);
-		
 		Map<String, Object> response = new HashMap<String, Object>();
-		response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
+		try {
+			DbQueryStatus status = profileDriver.followFriend(userName, friendUserName);
+		
+			response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
 
-		return response;
+			return response;
+		}catch(Exception e) {
+			response = Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_GENERIC, null);
+			return response;
+		}
 		
 	}
 
@@ -82,12 +90,18 @@ public class ProfileController {
 	public @ResponseBody Map<String, Object> getAllFriendFavouriteSongTitles(@PathVariable("userName") String userName,
 			HttpServletRequest request) {
 
-		DbQueryStatus status = profileDriver.getAllSongFriendsLike(userName);
-		
 		Map<String, Object> response = new HashMap<String, Object>();
-		response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
+		try {
+			DbQueryStatus status = profileDriver.getAllSongFriendsLike(userName);
+		
+			response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
 
-		return response;
+			return response;
+		}catch(Exception e) {
+			response = Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_GENERIC, null);
+			return response;
+		}
+		
 	}
 
 
@@ -95,12 +109,18 @@ public class ProfileController {
 	public @ResponseBody Map<String, Object> unfollowFriend(@PathVariable("userName") String userName,
 			@PathVariable("friendUserName") String friendUserName, HttpServletRequest request) {
 
-		DbQueryStatus status = profileDriver.unfollowFriend(userName, friendUserName);
-		
 		Map<String, Object> response = new HashMap<String, Object>();
-		response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
+		try {
+			DbQueryStatus status = profileDriver.unfollowFriend(userName, friendUserName);
+		
+			response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
 
-		return response;
+			return response;
+		}catch(Exception e) {
+			response = Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_GENERIC, null);
+			return response;
+		}
+		
 	}
 
 	@RequestMapping(value = "/likeSong/{userName}/{songId}", method = RequestMethod.PUT)
