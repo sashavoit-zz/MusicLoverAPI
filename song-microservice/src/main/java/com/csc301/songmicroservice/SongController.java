@@ -31,12 +31,10 @@ public class SongController {
 
 	private OkHttpClient client = new OkHttpClient();
 
-	
 	public SongController(SongDal songDal) {
 		this.songDal = songDal;
 	}
 
-	
 	@RequestMapping(value = "/getSongById/{songId}", method = RequestMethod.GET)
 	public @ResponseBody Map<String, Object> getSongById(@PathVariable("songId") String songId,
 			HttpServletRequest request) {
@@ -52,29 +50,38 @@ public class SongController {
 		return response;
 	}
 
-	
 	@RequestMapping(value = "/getSongTitleById/{songId}", method = RequestMethod.GET)
 	public @ResponseBody Map<String, Object> getSongTitleById(@PathVariable("songId") String songId,
 			HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("GET %s", Utils.getUrl(request)));
+		
+		DbQueryStatus dbQueryStatus = songDal.getSongTitleById(songId);
 
-		return null;
+		response.put("message", dbQueryStatus.getMessage());
+		response = Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
+
+		return response;
 	}
 
-	
 	@RequestMapping(value = "/deleteSongById/{songId}", method = RequestMethod.DELETE)
 	public @ResponseBody Map<String, Object> deleteSongById(@PathVariable("songId") String songId,
 			HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("DELETE %s", Utils.getUrl(request)));
+		
+		// TODO: before we delete song from db - remove song from all profiles' fav list
+		
+		DbQueryStatus dbQueryStatus = songDal.deleteSongById(songId);
 
-		return null;
+		response.put("message", dbQueryStatus.getMessage());
+		response = Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
+
+		return response;
 	}
 
-	
 	@RequestMapping(value = "/addSong", method = RequestMethod.POST)
 	public @ResponseBody Map<String, Object> addSong(@RequestParam Map<String, String> params,
 			HttpServletRequest request) {
@@ -82,17 +89,52 @@ public class SongController {
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("POST %s", Utils.getUrl(request)));
 
-		return null;
+		DbQueryStatus dbQueryStatus; 
+		
+		// ensure "songName", "songArtistFullName", "songAlbum" are only fields and they arent emprty
+		if (params.size() != 3) {
+			// error
+			dbQueryStatus = new DbQueryStatus("big L - too many params", DbQueryExecResult.QUERY_ERROR_GENERIC);
+		} else if (params.get("songName") == null || params.get("songArtistFullName") == null || params.get("songAlbum") == null) {
+			// error
+			dbQueryStatus = new DbQueryStatus("big L - missing required param", DbQueryExecResult.QUERY_ERROR_GENERIC);
+		} else if (params.get("songName").isEmpty() || params.get("songArtistFullName").isEmpty() || params.get("songAlbum").isEmpty()) {
+			// error
+			dbQueryStatus = new DbQueryStatus("big L - required param is empty", DbQueryExecResult.QUERY_ERROR_GENERIC);
+		} else {
+			// call DAL class to insert song into DB
+			Song songToAdd = new Song(params.get("songName"), params.get("songArtistFullName"), params.get("songAlbum"));
+			dbQueryStatus = songDal.addSong(songToAdd);
+		}
+		
+		response.put("message", dbQueryStatus.getMessage());
+		response = Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
+
+		return response;
 	}
 
-	
 	@RequestMapping(value = "/updateSongFavouritesCount/{songId}", method = RequestMethod.PUT)
 	public @ResponseBody Map<String, Object> updateFavouritesCount(@PathVariable("songId") String songId,
 			@RequestParam("shouldDecrement") String shouldDecrement, HttpServletRequest request) {
 
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("data", String.format("PUT %s", Utils.getUrl(request)));
+		
+		DbQueryStatus dbQueryStatus; 
+		
+		// validate that "shouldDecrement" is T/F only
+		if (shouldDecrement.contentEquals("true") || shouldDecrement.contentEquals("false")) {
+			boolean boolShouldDecrement = Boolean.parseBoolean(shouldDecrement);
+			
+			// call DB tell them to update it
+			dbQueryStatus = songDal.updateSongFavouritesCount(songId, boolShouldDecrement);
+		} else {
+			dbQueryStatus = new DbQueryStatus("big L - shouldDecrement can only be true or false", DbQueryExecResult.QUERY_ERROR_GENERIC);
+		}
+		
+		response.put("message", dbQueryStatus.getMessage());
+		response = Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 
-		return null;
+		return response;
 	}
 }
