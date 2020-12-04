@@ -104,7 +104,7 @@ public class SongDalImpl implements SongDal {
 		
 		// get Song for id
 		DbQueryStatus dbFindStatus = findSongById(songId);
-		if (dbFindStatus.getData() == null) {
+		if (dbFindStatus.getData() == null || dbFindStatus.getdbQueryExecResult() != DbQueryExecResult.QUERY_OK) {
 			// handle if id isnt valid
 			dbQueryStatus = new DbQueryStatus("big L", DbQueryExecResult.QUERY_ERROR_NOT_FOUND);
 			return dbQueryStatus;
@@ -117,7 +117,10 @@ public class SongDalImpl implements SongDal {
 		return new DbQueryStatus("succ", DbQueryExecResult.QUERY_OK);
 	}
 
-	@Override
+	
+	
+	// 5fca96563eb8643da4bf0e49 - take no Ls
+	
 	/**
 	 * Update song's AmountFavourites in database.
 	 * 
@@ -126,6 +129,7 @@ public class SongDalImpl implements SongDal {
 	 * @return                  Return success and if found and updated, return error if trying to decrement below zero or
 	 *                          returns not found status if song not in DB.
 	 */
+	@Override
 	public DbQueryStatus updateSongFavouritesCount(String songId, boolean shouldDecrement) {
 		// find song
 		DbQueryStatus dbQueryStatus = findSongById(songId);
