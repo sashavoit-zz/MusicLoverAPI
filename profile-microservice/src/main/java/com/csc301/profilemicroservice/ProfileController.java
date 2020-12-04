@@ -91,6 +91,13 @@ public class ProfileController {
 
 		Map<String, Object> response = new HashMap<String, Object>();
 		try {
+			
+			if (userName.equals(friendUserName)) {
+				//User and friend must be different
+				response = Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_GENERIC, null);
+				return response;
+			}
+			
 			DbQueryStatus status = profileDriver.followFriend(userName, friendUserName);
 		
 			//Adding status to the response

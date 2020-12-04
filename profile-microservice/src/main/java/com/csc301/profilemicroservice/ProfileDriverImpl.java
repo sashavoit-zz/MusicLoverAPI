@@ -77,7 +77,7 @@ public class ProfileDriverImpl implements ProfileDriver {
 	}
 
 	/**
-	 * Adds a follow relation between user and a friend
+	 * Adds a follow relation between user and a friend, assuming user and friend are different nodes.
 	 * 
 	 * @param userName: user name of user
 	 * @param frndUserName: user name of a friend
