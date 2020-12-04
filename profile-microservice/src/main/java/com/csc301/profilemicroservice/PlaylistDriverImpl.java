@@ -42,7 +42,8 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 			try (Transaction trans = session.beginTransaction()) {
 				String queryStr = 
 						"MATCH (u:profile {userName: $userName})-[:created]->(p:playlist {plName: $userName + \"-favourites\"})\n"
-						+ "MERGE(p)-[:includes]->(s:song {songId: $songId})\n"
+						+ "MERGE(s:song {songId:$songId})\n"
+						+ "MERGE(p)-[:includes]->(s)\n"
 						+ "RETURN COUNT(u) as userCount, COUNT(p) as playlistCount";
 				
 				//Running a query
