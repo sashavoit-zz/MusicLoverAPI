@@ -12,11 +12,24 @@ public class SongDalImpl implements SongDal {
 
 	private final MongoTemplate db;
 
+
+	/**
+	 * Constructs SongDalImpl object.
+	 * 
+	 * @param  mongoTemplate  Spring's builtin class for mongoDB operations 
+	 */
 	@Autowired
 	public SongDalImpl(MongoTemplate mongoTemplate) {
 		this.db = mongoTemplate;
 	}
 
+	
+	/**
+	 * Add a song to the database (duplicates are fine).
+	 * 
+	 * @param  songToAdd  Song that is to be added to DB.
+	 * @return            DbQueryStatus with data about success or failure of add operation.
+	 */
 	@Override
 	public DbQueryStatus addSong(Song songToAdd) {
 		// assume songToAdd is properly formatted
@@ -35,6 +48,13 @@ public class SongDalImpl implements SongDal {
 		return dbQueryStatus;
 	}
 
+	
+	/**
+	 * Find Song in database that has songId.
+	 * 
+	 * @param  songId  Id of song which we want to find.
+	 * @return         Return success and song data if found, else returns not found status.
+	 */
 	@Override
 	public DbQueryStatus findSongById(String songId) {
 		// find song
@@ -52,6 +72,13 @@ public class SongDalImpl implements SongDal {
 		return dbQueryStatus;
 	}
 
+	
+	/**
+	 * Find song title in databasethat has songId.
+	 * 
+	 * @param  songId  Id of song for which we want to get its title
+	 * @return         Return success and song title if found, else returns not found status.
+	 */
 	@Override
 	public DbQueryStatus getSongTitleById(String songId) {
 		DbQueryStatus dbQueryStatus = findSongById(songId);
@@ -64,6 +91,13 @@ public class SongDalImpl implements SongDal {
 		return dbQueryStatus;
 	}
 
+	
+	/**
+	 * Delete song from database.
+	 * 
+	 * @param  songId   Id of song which we want to delete.
+	 * @return          Return success and if found and deleted, else returns not found status.
+	 */
 	@Override
 	public DbQueryStatus deleteSongById(String songId) {
 		DbQueryStatus dbQueryStatus;
@@ -84,6 +118,14 @@ public class SongDalImpl implements SongDal {
 	}
 
 	@Override
+	/**
+	 * Update song's AmountFavourites in database.
+	 * 
+	 * @param  songId           Id of song which we want to update amount favourites.
+	 * @param  shouldDecrement  Update song's AmountFavourites by decrementing if true, else by incrementing.
+	 * @return                  Return success and if found and updated, return error if trying to decrement below zero or
+	 *                          returns not found status if song not in DB.
+	 */
 	public DbQueryStatus updateSongFavouritesCount(String songId, boolean shouldDecrement) {
 		// find song
 		DbQueryStatus dbQueryStatus = findSongById(songId);
@@ -97,7 +139,7 @@ public class SongDalImpl implements SongDal {
 				if (newAmountFav > 0) {
 					newAmountFav--;
 				} else {
-					dbQueryStatus = new DbQueryStatus("big L - youre trying to decrement below 0", DbQueryExecResult.QUERY_ERROR_NOT_FOUND);
+					dbQueryStatus = new DbQueryStatus("big L - youre trying to decrement below 0", DbQueryExecResult.QUERY_ERROR_GENERIC);
 					return dbQueryStatus;
 				}
 			} else {

@@ -31,10 +31,23 @@ public class SongController {
 
 	private OkHttpClient client = new OkHttpClient();
 
+	/**
+	 * Construct SongController object.
+	 * 
+	 * @param  songDal  Data Access Layer object, used to interact with DB.  
+	 */
 	public SongController(SongDal songDal) {
 		this.songDal = songDal;
 	}
 
+	
+	/**
+	 * Get all song data in database, which has id of songId.
+	 * 
+	 * @param songId   Id of song to find.
+	 * @param request  Request sent to server.
+	 * @return         Response sent to client.
+	 */
 	@RequestMapping(value = "/getSongById/{songId}", method = RequestMethod.GET)
 	public @ResponseBody Map<String, Object> getSongById(@PathVariable("songId") String songId,
 			HttpServletRequest request) {
@@ -50,6 +63,14 @@ public class SongController {
 		return response;
 	}
 
+	
+	/**
+	 * Get all song title in database, which has id of songId.
+	 * 
+	 * @param songId   Id of song to find.
+	 * @param request  Request sent to server.
+	 * @return         Response sent to client.
+	 */
 	@RequestMapping(value = "/getSongTitleById/{songId}", method = RequestMethod.GET)
 	public @ResponseBody Map<String, Object> getSongTitleById(@PathVariable("songId") String songId,
 			HttpServletRequest request) {
@@ -65,6 +86,14 @@ public class SongController {
 		return response;
 	}
 
+	
+	/**
+	 * Delete song in database, which has id of songId.
+	 * 
+	 * @param songId   Id of song to delete.
+	 * @param request  Request sent to server.
+	 * @return         Response sent to client.
+	 */
 	@RequestMapping(value = "/deleteSongById/{songId}", method = RequestMethod.DELETE)
 	public @ResponseBody Map<String, Object> deleteSongById(@PathVariable("songId") String songId,
 			HttpServletRequest request) {
@@ -82,6 +111,14 @@ public class SongController {
 		return response;
 	}
 
+	
+	/**
+	 * Add song to database.
+	 * 
+	 * @param params   Contains data fields for Song.
+	 * @param request  Request sent to server.
+	 * @return         Response sent to client.
+	 */
 	@RequestMapping(value = "/addSong", method = RequestMethod.POST)
 	public @ResponseBody Map<String, Object> addSong(@RequestParam Map<String, String> params,
 			HttpServletRequest request) {
@@ -113,6 +150,15 @@ public class SongController {
 		return response;
 	}
 
+	
+	/**
+	 * Update a song's favourite count, whose id is songId.
+	 * 
+	 * @param songId           Id of song for which to update.
+	 * @param shouldDecrement  Determines wheter to increment or decrement.
+	 * @param request          Request sent to server.
+	 * @return                 Response sent to client.
+	 */
 	@RequestMapping(value = "/updateSongFavouritesCount/{songId}", method = RequestMethod.PUT)
 	public @ResponseBody Map<String, Object> updateFavouritesCount(@PathVariable("songId") String songId,
 			@RequestParam("shouldDecrement") String shouldDecrement, HttpServletRequest request) {
