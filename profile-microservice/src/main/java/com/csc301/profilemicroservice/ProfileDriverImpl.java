@@ -89,7 +89,7 @@ public class ProfileDriverImpl implements ProfileDriver {
 			try (Transaction trans = session.beginTransaction()) {
 				String queryStr = "MATCH(user:profile {userName: $userName})\n"
 						+ "MATCH(friend:profile {userName: $frndUserName})\n"
-						+ "CREATE(user)-[:follows]->(friend)\n"
+						+ "MERGE(user)-[:follows]->(friend)\n"
 						+ "RETURN COUNT(user) as userCount, COUNT(friend) as friendCount";
 				
 				//Running a query
