@@ -6,7 +6,10 @@ import org.springframework.http.HttpStatus;
 
 import okhttp3.RequestBody;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Utils {
 
@@ -21,6 +24,17 @@ public class Utils {
 			requestUrl += "?" + queryString;
 		}
 		return requestUrl;
+	}
+	
+	//Used to extract body from HttpServletRequest
+	public static String getBody(HttpServletRequest req) {
+		try {
+			BufferedReader br = req.getReader();
+			return br.lines().collect(Collectors.joining(System.lineSeparator()));
+		} catch (IOException e) {
+			// Shouldn't happen
+			return null;
+		}
 	}
 	
 	// Sets the response status and data for a response from the server. You will not always be able to use this function

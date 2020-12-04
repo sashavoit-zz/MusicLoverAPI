@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
@@ -12,6 +14,8 @@ import org.neo4j.driver.v1.StatementResult;
 
 import org.springframework.stereotype.Repository;
 import org.neo4j.driver.v1.Transaction;
+import static org.neo4j.driver.v1.Values.parameters;
+
 
 @Repository
 public class ProfileDriverImpl implements ProfileDriver {
@@ -38,27 +42,201 @@ public class ProfileDriverImpl implements ProfileDriver {
 		}
 	}
 	
+	/**
+	 * Creates a user profile in the database
+	 * 
+	 * @param userName: user name of new profile
+	 * @param fullName: full name of new profile
+	 * @param password: password of new profile
+	 * @return status of the query
+	 */
 	@Override
 	public DbQueryStatus createUserProfile(String userName, String fullName, String password) {
 		
-		return null;
+		DbQueryExecResult ifSuccessful;
+		try (Session session = ProfileMicroserviceApplication.driver.session()) {
+			try (Transaction trans = session.beginTransaction()) {
+				String queryStr = "CREATE (nProfile:profile {userName: $userName, fullName: $fullName, password: $password})\n"
+						+ "CREATE (nPlaylist:playlist {plName: $userName + \"-favourites\"})\n"
+						+ "CREATE (nProfile)-[:created]->(nPlaylist)";
+				
+				//Running a query
+				trans.run(queryStr, parameters("userName", userName, "fullName", fullName, "password", password));
+				trans.success();
+				ifSuccessful = DbQueryExecResult.QUERY_OK;
+			}catch(Exception e) {
+				//Exception occurred, query was unsuccessful
+				ifSuccessful = DbQueryExecResult.QUERY_ERROR_GENERIC;
+			}
+			session.close();
+		}
+		
+		DbQueryStatus status = new DbQueryStatus("create user profile", ifSuccessful);
+		return status;
+		
 	}
 
+	/**
+	 * Adds a follow relation between user and a friend, assuming user and friend are different nodes.
+	 * 
+	 * @param userName: user name of user
+	 * @param frndUserName: user name of a friend
+	 * @return status of the query
+	 */
 	@Override
 	public DbQueryStatus followFriend(String userName, String frndUserName) {
 		
-		return null;
+		DbQueryExecResult ifSuccessful;
+		try (Session session = ProfileMicroserviceApplication.driver.session()) {
+			try (Transaction trans = session.beginTransaction()) {
+				String queryStr = "MATCH(user:profile {userName: $userName})\n"
+						+ "MATCH(friend:profile {userName: $frndUserName})\n"
+						+ "MERGE(user)-[:follows]->(friend)\n"
+						+ "RETURN COUNT(user) as userCount, COUNT(friend) as friendCount";
+				
+				//Running a query
+				StatementResult res = trans.run(queryStr, parameters("userName", userName, "frndUserName", frndUserName));
+				
+				boolean not404;
+				if (res.hasNext()) {
+					Record rec = res.next();
+					
+					//Checking that user and his friend were found in database
+					not404 = (long)rec.asMap().get("userCount") > 0 && (long)rec.asMap().get("friendCount") > 0;
+				}else {
+					//Response is empty, user or friend were not found
+					not404 = false;
+				}
+				trans.success();
+				
+				ifSuccessful = not404 ? DbQueryExecResult.QUERY_OK : DbQueryExecResult.QUERY_ERROR_NOT_FOUND;
+			}catch(Exception e) {
+				//Exception occurred, query was unsuccessful
+				ifSuccessful = DbQueryExecResult.QUERY_ERROR_GENERIC;
+			}
+			session.close();
+		}
+		
+		DbQueryStatus status = new DbQueryStatus("follow a friend", ifSuccessful);
+		return status;
+		
 	}
 
+	/**
+	 * Removes a follow relation between user and a friend
+	 * 
+	 * @param userName: user name of user
+	 * @param frndUserName: user name of a friend
+	 * @return status of the query
+	 */
 	@Override
 	public DbQueryStatus unfollowFriend(String userName, String frndUserName) {
 		
-		return null;
+		DbQueryExecResult ifSuccessful;
+		try (Session session = ProfileMicroserviceApplication.driver.session()) {
+			try (Transaction trans = session.beginTransaction()) {
+				String queryStr = "MATCH(user:profile {userName: $userName})\n"
+						+ "MATCH(friend:profile {userName: $frndUserName})\n"
+						+ "MATCH(user)-[f:follows]->(friend)\n"
+						+ "DELETE f \n"
+						+ "RETURN COUNT(user) as userCount, COUNT(friend) as friendCount";
+				
+				//Running a query
+				StatementResult res = trans.run(queryStr, parameters("userName", userName, "frndUserName", frndUserName));
+				
+				boolean not404;
+				if (res.hasNext()) {
+					Record rec = res.next();
+					
+					//Checking that user and his friend were found in database
+					not404 = (long)rec.asMap().get("userCount") > 0 && (long)rec.asMap().get("friendCount") > 0;
+				}else {
+					//Response is empty, user or friend were not found
+					not404 = false;
+				}
+				trans.success();
+				
+				ifSuccessful = not404 ? DbQueryExecResult.QUERY_OK : DbQueryExecResult.QUERY_ERROR_NOT_FOUND;
+			}catch(Exception e) {
+				//Exception occurred, query was unsuccessful
+				ifSuccessful = DbQueryExecResult.QUERY_ERROR_GENERIC;
+			}
+			session.close();
+		}
+		
+		DbQueryStatus status = new DbQueryStatus("unfollow a friend", ifSuccessful);
+		return status;
+		
 	}
 
+	/**
+	 * Get all songs that friends of a user like
+	 * 
+	 * @param userName: user name of user
+	 * @return status of the query and array of user names of friends and songs they like
+	 */
 	@Override
 	public DbQueryStatus getAllSongFriendsLike(String userName) {
 			
-		return null;
+		DbQueryExecResult ifSuccessful;
+		Object data;
+		try (Session session = ProfileMicroserviceApplication.driver.session()) {
+			try (Transaction trans = session.beginTransaction()) {
+				String queryStr = "MATCH (p:profile {userName: $userName})\n"
+						+ "OPTIONAL MATCH (p)-[:follows]->(friend:profile)\n"
+						+ "OPTIONAL MATCH (friend)-[:created]->(list:playlist {plName: friend.userName + \"-favourites\"})-[:includes]->(s: song)\n"
+						+ "WITH friend.userName as name, s.songId as song\n"
+						+ "RETURN name, song";
+				
+				//Running a query
+				StatementResult res = trans.run(queryStr, parameters("userName", userName));
+				
+				if (res.hasNext()) {
+					
+					//Matching friends to the songs they like
+					Map<String, ArrayList<String>> friendsToSongs = new HashMap<String, ArrayList<String>>();
+										
+					while(res.hasNext()) {
+						Record rec = res.next();
+						String name = (String)rec.asMap().get("name");
+						String song = (String)rec.asMap().get("song");
+						
+						if (name == null) {
+							//Means that user is present in db, but has no friends
+							break;
+						}
+						
+						//Adding a friend key to map if it doesn't exist
+						if (!friendsToSongs.containsKey(name)) {
+							friendsToSongs.put(name, new ArrayList<String>());
+						}
+						
+						//Checking if user has at least one song he likes
+						if (song!=null) {
+							friendsToSongs.get(name).add(song);
+						}
+					}
+					//Query was successful, retrieve the data
+					ifSuccessful = DbQueryExecResult.QUERY_OK;
+					data = friendsToSongs;
+				}else {
+					//Result is empty, user was not found
+					ifSuccessful = DbQueryExecResult.QUERY_ERROR_NOT_FOUND;
+					data = null;
+				}
+				
+			}catch(Exception e) {
+				e.printStackTrace();
+				//Exception occurred, query was unsuccessful
+				ifSuccessful = DbQueryExecResult.QUERY_ERROR_GENERIC;
+				data = null;
+			}
+			session.close();
+		}
+		
+		DbQueryStatus status = new DbQueryStatus("get all songs friends like", ifSuccessful);
+		status.setData(data);
+		return status;
+		
 	}
 }
