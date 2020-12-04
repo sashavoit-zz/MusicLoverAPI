@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.Session;
@@ -181,25 +183,40 @@ public class ProfileDriverImpl implements ProfileDriver {
 		try (Session session = ProfileMicroserviceApplication.driver.session()) {
 			try (Transaction trans = session.beginTransaction()) {
 				String queryStr = "MATCH (p:profile {userName: $userName})\n"
-						+ "OPTIONAL MATCH (p)-[:follows]->(friend:profile)\n"
+						+ "MATCH (p)-[:follows]->(friend:profile)\n"
 						+ "OPTIONAL MATCH (friend)-[:created]->(list:playlist {plName: friend.userName + \"-favourites\"})-[:includes]->(s: song)\n"
-						+ "WITH friend.userName as name, COLLECT(s.songId) as songs\n"
-						+ "RETURN COLLECT([name, songs]) as pairs";
+						+ "WITH friend.userName as name, s.songId as song\n"
+						+ "RETURN name, song";
 				
 				//Running a query
 				StatementResult res = trans.run(queryStr, parameters("userName", userName));
 				
 				if (res.hasNext()) {
+					
+					Map<String, ArrayList<String>> friendsToSongs = new HashMap<String, ArrayList<String>>();
+										
+					while(res.hasNext()) {
+						Record rec = res.next();
+						String name = (String)rec.asMap().get("name");
+						String song = (String)rec.asMap().get("song");
+						if (!friendsToSongs.containsKey(name)) {
+							friendsToSongs.put(name, new ArrayList<String>());
+						}
+						if (song!=null) {
+							friendsToSongs.get(name).add(song);
+						}
+					}
 					//Query was successful, retrieve the data
 					ifSuccessful = DbQueryExecResult.QUERY_OK;
-					data = res.next().asMap().get("pairs");
+					data = friendsToSongs;
 				}else {
 					//Result is empty, user was not found
-					ifSuccessful = DbQueryExecResult.QUERY_ERROR_NOT_FOUND;
+					ifSuccessful = DbQueryExecResult.QUERY_OK;
 					data = null;
 				}
 				
 			}catch(Exception e) {
+				e.printStackTrace();
 				//Exception occurred, query was unsuccessful
 				ifSuccessful = DbQueryExecResult.QUERY_ERROR_GENERIC;
 				data = null;
