@@ -101,8 +101,7 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 					//Check if user, playlist, song were all present in database and the song was liked before the query 
 					not404 = (long)rec.asMap().get("userCount") > 0 
 							&& (long)rec.asMap().get("playlistCount") > 0 
-							&& (long)rec.asMap().get("songsCount") > 0 
-							&& (long)rec.asMap().get("relationshipCount") > 0;
+							&& (long)rec.asMap().get("songsCount") > 0;
 				}else {
 					//Empty response means that user, playlist or song is not found 
 					not404 = false;
