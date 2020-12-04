@@ -94,16 +94,16 @@ public class SongController {
 		// ensure "songName", "songArtistFullName", "songAlbum" are only fields and they arent emprty
 		if (params.size() != 3) {
 			// error
-			dbQueryStatus = new DbQueryStatus("big L - too many params", DbQueryExecResult.QUERY_ERROR_GENERIC);
-		} else if (params.get("songName") == null || params.get("songArtistFullName") == null || params.get("songAlbum") == null) {
+			dbQueryStatus = new DbQueryStatus("big L - not the right num of params", DbQueryExecResult.QUERY_ERROR_GENERIC);
+		} else if (params.get(Song.KEY_SONG_NAME) == null || params.get(Song.KEY_SONG_ARTIST_FULL_NAME) == null || params.get(Song.KEY_SONG_ALBUM) == null) {
 			// error
 			dbQueryStatus = new DbQueryStatus("big L - missing required param", DbQueryExecResult.QUERY_ERROR_GENERIC);
-		} else if (params.get("songName").isEmpty() || params.get("songArtistFullName").isEmpty() || params.get("songAlbum").isEmpty()) {
+		} else if (params.get(Song.KEY_SONG_NAME).isEmpty() || params.get(Song.KEY_SONG_ARTIST_FULL_NAME).isEmpty() || params.get(Song.KEY_SONG_ALBUM).isEmpty()) {
 			// error
 			dbQueryStatus = new DbQueryStatus("big L - required param is empty", DbQueryExecResult.QUERY_ERROR_GENERIC);
 		} else {
 			// call DAL class to insert song into DB
-			Song songToAdd = new Song(params.get("songName"), params.get("songArtistFullName"), params.get("songAlbum"));
+			Song songToAdd = new Song(params.get(Song.KEY_SONG_NAME), params.get(Song.KEY_SONG_ARTIST_FULL_NAME), params.get(Song.KEY_SONG_ALBUM));
 			dbQueryStatus = songDal.addSong(songToAdd);
 		}
 		
