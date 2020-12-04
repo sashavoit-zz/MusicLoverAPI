@@ -183,7 +183,7 @@ public class ProfileDriverImpl implements ProfileDriver {
 		try (Session session = ProfileMicroserviceApplication.driver.session()) {
 			try (Transaction trans = session.beginTransaction()) {
 				String queryStr = "MATCH (p:profile {userName: $userName})\n"
-						+ "MATCH (p)-[:follows]->(friend:profile)\n"
+						+ "OPTIONAL MATCH (p)-[:follows]->(friend:profile)\n"
 						+ "OPTIONAL MATCH (friend)-[:created]->(list:playlist {plName: friend.userName + \"-favourites\"})-[:includes]->(s: song)\n"
 						+ "WITH friend.userName as name, s.songId as song\n"
 						+ "RETURN name, song";
@@ -193,15 +193,25 @@ public class ProfileDriverImpl implements ProfileDriver {
 				
 				if (res.hasNext()) {
 					
+					//Matching friends to the songs they like
 					Map<String, ArrayList<String>> friendsToSongs = new HashMap<String, ArrayList<String>>();
 										
 					while(res.hasNext()) {
 						Record rec = res.next();
 						String name = (String)rec.asMap().get("name");
 						String song = (String)rec.asMap().get("song");
+						
+						if (name == null) {
+							//Means that user is present in db, but has no friends
+							break;
+						}
+						
+						//Adding a friend key to map if it doesn't exist
 						if (!friendsToSongs.containsKey(name)) {
 							friendsToSongs.put(name, new ArrayList<String>());
 						}
+						
+						//Checking if user has at least one song he likes
 						if (song!=null) {
 							friendsToSongs.get(name).add(song);
 						}
@@ -211,7 +221,7 @@ public class ProfileDriverImpl implements ProfileDriver {
 					data = friendsToSongs;
 				}else {
 					//Result is empty, user was not found
-					ifSuccessful = DbQueryExecResult.QUERY_OK;
+					ifSuccessful = DbQueryExecResult.QUERY_ERROR_NOT_FOUND;
 					data = null;
 				}
 				
