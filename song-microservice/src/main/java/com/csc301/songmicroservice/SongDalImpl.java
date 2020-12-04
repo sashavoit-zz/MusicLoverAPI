@@ -96,6 +96,9 @@ public class SongDalImpl implements SongDal {
 			if (shouldDecrement) {
 				if (newAmountFav > 0) {
 					newAmountFav--;
+				} else {
+					dbQueryStatus = new DbQueryStatus("big L - youre trying to decrement below 0", DbQueryExecResult.QUERY_ERROR_NOT_FOUND);
+					return dbQueryStatus;
 				}
 			} else {
 				newAmountFav++;
