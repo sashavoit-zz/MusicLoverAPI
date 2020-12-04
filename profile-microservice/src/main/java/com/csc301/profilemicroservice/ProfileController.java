@@ -60,11 +60,10 @@ public class ProfileController {
 			HttpServletRequest request) {
 		Map<String, Object> response = new HashMap<String, Object>();
 		try {
-			//Parsing json body
-			JSONObject body = new JSONObject(Utils.getBody(request));
-			String userName = body.getString(KEY_USER_NAME);
-			String fullName = body.getString(KEY_USER_FULLNAME);
-			String password = body.getString(KEY_USER_PASSWORD);
+			//Parsing params
+			String userName = params.get(KEY_USER_NAME);
+			String fullName = params.get(KEY_USER_FULLNAME);
+			String password = params.get(KEY_USER_PASSWORD);
 		
 			DbQueryStatus status = profileDriver.createUserProfile(userName, fullName, password);
 		
