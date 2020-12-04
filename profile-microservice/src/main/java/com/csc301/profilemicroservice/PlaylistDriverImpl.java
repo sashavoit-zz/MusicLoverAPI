@@ -42,7 +42,7 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 			try (Transaction trans = session.beginTransaction()) {
 				String queryStr = 
 						"MATCH (u:profile {userName: $userName})-[:created]->(p:playlist {plName: $userName + \"-favourites\"})\n"
-						+ "MERGE(p)-[:contains]->(s:song {songId: $songId})\n"
+						+ "MERGE(p)-[:includes]->(s:song {songId: $songId})\n"
 						+ "RETURN COUNT(u) as userCount, COUNT(p) as playlistCount";
 				
 				//Running a query
@@ -86,7 +86,7 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 		DbQueryExecResult ifSuccessful;
 		try (Session session = ProfileMicroserviceApplication.driver.session()) {
 			try (Transaction trans = session.beginTransaction()) {
-				String queryStr = "MATCH (u:profile {userName: $userName})-[:created]->(p:playlist {plName: $userName + \"-favourites\"})-[c:contains]->(s:song {songId: $songId})\n"
+				String queryStr = "MATCH (u:profile {userName: $userName})-[:created]->(p:playlist {plName: $userName + \"-favourites\"})-[c:includes]->(s:song {songId: $songId})\n"
 						+ "DETACH DELETE(c)\n"
 						+ "RETURN COUNT(u) as userCount, COUNT(p) as playlistCount, COUNT(s) as songsCount";
 				

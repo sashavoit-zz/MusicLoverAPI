@@ -182,7 +182,7 @@ public class ProfileDriverImpl implements ProfileDriver {
 			try (Transaction trans = session.beginTransaction()) {
 				String queryStr = "MATCH (p:profile {userName: $userName})\n"
 						+ "OPTIONAL MATCH (p)-[:follows]->(friend:profile)\n"
-						+ "OPTIONAL MATCH (friend)-[:created]->(list:playlist {plName: friend.userName + \"-favourites\"})-[:contains]->(s: song)\n"
+						+ "OPTIONAL MATCH (friend)-[:created]->(list:playlist {plName: friend.userName + \"-favourites\"})-[:includes]->(s: song)\n"
 						+ "WITH friend.userName as name, COLLECT(s.songId) as songs\n"
 						+ "RETURN COLLECT([name, songs]) as pairs";
 				
