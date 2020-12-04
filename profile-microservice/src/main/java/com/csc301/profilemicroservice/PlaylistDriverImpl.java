@@ -42,9 +42,8 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 			try (Transaction trans = session.beginTransaction()) {
 				String queryStr = 
 						"MATCH (u:profile {userName: $userName})-[:created]->(p:playlist {plName: $userName + \"-favourites\"})\n"
-						+ "MATCH(s:song {songId: $songId})\n"
-						+ "MERGE(p)-[:contains]->(s)\n"
-						+ "RETURN COUNT(u) as userCount, COUNT(p) as playlistCount, COUNT(s) as songsCount";
+						+ "MERGE(p)-[:contains]->(s:song {songId: $songId})\n"
+						+ "RETURN COUNT(u) as userCount, COUNT(p) as playlistCount";
 				
 				//Running a query
 				StatementResult res = trans.run(queryStr, parameters("userName", userName, "songId", songId));
@@ -55,8 +54,7 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 					
 					//Check if user, playlist and song were all present in database 
 					not404 = (long)rec.asMap().get("userCount") > 0 
-							&& (long)rec.asMap().get("playlistCount") > 0 
-							&& (long)rec.asMap().get("songsCount") > 0;
+							&& (long)rec.asMap().get("playlistCount") > 0;
 				}else {
 					//Empty response means that user, playlist or song is not found 
 					not404 = false;
