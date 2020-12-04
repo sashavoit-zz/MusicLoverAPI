@@ -117,10 +117,7 @@ public class SongDalImpl implements SongDal {
 		return new DbQueryStatus("succ", DbQueryExecResult.QUERY_OK);
 	}
 
-	
-	
-	// 5fca96563eb8643da4bf0e49 - take no Ls
-	
+
 	/**
 	 * Update song's AmountFavourites in database.
 	 * 
