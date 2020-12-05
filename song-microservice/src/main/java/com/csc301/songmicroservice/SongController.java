@@ -80,6 +80,7 @@ public class SongController {
 		
 		DbQueryStatus dbQueryStatus = songDal.getSongTitleById(songId);
 
+		
 		response.put("message", dbQueryStatus.getMessage());
 		response = Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
 
@@ -101,9 +102,12 @@ public class SongController {
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("path", String.format("DELETE %s", Utils.getUrl(request)));
 		
-		// TODO: before we delete song from db - remove song from all profiles' fav list
-		
 		DbQueryStatus dbQueryStatus = songDal.deleteSongById(songId);
+		
+		// if we deleted a song - remove it from all playlists as well
+		if (dbQueryStatus.getdbQueryExecResult() == DbQueryExecResult.QUERY_OK) {
+			Utils.deleteSongFromPlaylist(songId, client);
+		}
 
 		response.put("message", dbQueryStatus.getMessage());
 		response = Utils.setResponseStatus(response, dbQueryStatus.getdbQueryExecResult(), dbQueryStatus.getData());
