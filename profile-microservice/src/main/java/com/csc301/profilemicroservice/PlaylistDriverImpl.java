@@ -73,6 +73,43 @@ public class PlaylistDriverImpl implements PlaylistDriver {
 		DbQueryStatus status = new DbQueryStatus("like a song", ifSuccessful);
 		return status;
 	}
+	
+	/**
+	 * Method to check if song is liked by a user
+	 * 
+	 * @param userName: user name
+	 * @param songId: song id
+	 * @return true if song is liked by user; false, otherwise
+	 */
+	public boolean ifSongLiked(String userName, String songId) {
+		
+		boolean result;
+		try (Session session = ProfileMicroserviceApplication.driver.session()) {
+			try (Transaction trans = session.beginTransaction()) {
+				String queryStr = 
+						"RETURN EXISTS((:profile {userName: $userName})-[:created]->(:playlist {plName: $userName + \"-favourites\"})-[:includes]->(:song {songId: $songId})) as ifExists";
+				
+				//Running a query
+				StatementResult res = trans.run(queryStr, parameters("userName", userName, "songId", songId));
+				
+				if (res.hasNext()) {
+					//Query was successful
+					result = (boolean)res.next().asMap().get("ifExists");
+				}else {
+					//Empty response shouldn't happen, means something went wrong
+					result = false;
+				}
+				trans.success();
+			}catch(Exception e) {
+				//Error occurred, something went wrong
+				result = false;
+			}
+			session.close();
+		}
+		
+		return result;
+		
+	}
 
 	/**
 	 * Unlike a song by a user, i.e. remove a to user's favourites.
