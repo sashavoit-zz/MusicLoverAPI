@@ -173,7 +173,7 @@ public class ProfileDriverImpl implements ProfileDriver {
 	 * Get all songs that friends of a user like
 	 * 
 	 * @param userName: user name of user
-	 * @return status of the query and array of user names of friends and songs they like
+	 * @return status of the query and mapping of user names of friends to ids of songs they like
 	 */
 	@Override
 	public DbQueryStatus getAllSongFriendsLike(String userName) {

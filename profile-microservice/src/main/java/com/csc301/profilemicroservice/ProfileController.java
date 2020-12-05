@@ -34,6 +34,7 @@ public class ProfileController {
 	public static final String KEY_USER_NAME = "userName";
 	public static final String KEY_USER_FULLNAME = "fullName";
 	public static final String KEY_USER_PASSWORD = "password";
+	public static final String SONG_MICROSERVICE_URL = "http://localhost:3001";
 
 	@Autowired
 	private final ProfileDriverImpl profileDriver;
@@ -126,12 +127,16 @@ public class ProfileController {
 		Map<String, Object> response = new HashMap<String, Object>();
 		try {
 			DbQueryStatus status = profileDriver.getAllSongFriendsLike(userName);
+			
+			//Converting ids into titles
+			status.setData(Utils.convertSongIdsToSongTitles(client, SONG_MICROSERVICE_URL, (Map<String, ArrayList<String>>)status.getData()));
 		
 			//Adding status to the response
 			response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
 
 			return response;
 		}catch(Exception e) {
+			e.printStackTrace();
 			//Exception occurred, request was unsuccessful
 			response = Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_GENERIC, null);
 			return response;
@@ -181,8 +186,25 @@ public class ProfileController {
 
 		Map<String, Object> response = new HashMap<String, Object>();
 		try {
-			DbQueryStatus status = playlistDriver.likeSong(userName, songId);
-		
+			
+			DbQueryStatus status;
+			
+			if (!Utils.checkIfSongIsInSongMicroservice(client, SONG_MICROSERVICE_URL, songId)) {
+				//If song is not in song microservice, return 404 
+				status = new DbQueryStatus("song is not inside song-svc", DbQueryExecResult.QUERY_ERROR_NOT_FOUND);
+			}else {
+				if (!playlistDriver.ifSongLiked(userName, songId)) {
+					//If song is not yet liked, like it and also update song favourites count
+					status = playlistDriver.likeSong(userName, songId);
+					if (status.getdbQueryExecResult() == DbQueryExecResult.QUERY_OK) {
+						//If like was successful, update favourites count
+						Utils.updateSongFavouritesCount(client, SONG_MICROSERVICE_URL, false, songId);
+					}
+				}else {
+					status = playlistDriver.likeSong(userName, songId);
+				}
+			}
+					
 			//Adding status to the response
 			response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
 
@@ -209,7 +231,15 @@ public class ProfileController {
 		Map<String, Object> response = new HashMap<String, Object>();
 		try {
 			DbQueryStatus status = playlistDriver.unlikeSong(userName, songId);
-		
+			
+			if (status.getdbQueryExecResult() == DbQueryExecResult.QUERY_OK) {
+				//Calling song microservice to update song favourites count
+				int code = Utils.updateSongFavouritesCount(client, SONG_MICROSERVICE_URL, true, songId);
+				if (code!=200) {
+					status.setdbQueryExecResult(DbQueryExecResult.QUERY_ERROR_GENERIC);
+				}
+			}
+			
 			//Adding status to the response
 			response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
 
