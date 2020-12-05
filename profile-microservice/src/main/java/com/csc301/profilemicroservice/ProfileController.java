@@ -129,14 +129,14 @@ public class ProfileController {
 			DbQueryStatus status = profileDriver.getAllSongFriendsLike(userName);
 			
 			//Converting ids into titles
-			status.setData(Utils.convertSongIdsToSongTitles(client, SONG_MICROSERVICE_URL, (Map<String, ArrayList<String>>)status.getData()));
-		
+			if (status.getdbQueryExecResult() == DbQueryExecResult.QUERY_OK) {
+				status.setData(Utils.convertSongIdsToSongTitles(client, SONG_MICROSERVICE_URL, (Map<String, ArrayList<String>>)status.getData()));
+			}
 			//Adding status to the response
 			response = Utils.setResponseStatus(response, status.getdbQueryExecResult(), status.getData());
 
 			return response;
 		}catch(Exception e) {
-			e.printStackTrace();
 			//Exception occurred, request was unsuccessful
 			response = Utils.setResponseStatus(response, DbQueryExecResult.QUERY_ERROR_GENERIC, null);
 			return response;
