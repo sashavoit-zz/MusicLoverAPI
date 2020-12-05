@@ -4,13 +4,19 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.HttpStatus;
 
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 
+import java.io.IOException;
 import java.util.Map;
 
 public class Utils {
 
 	public static RequestBody emptyRequestBody = RequestBody.create(null, "");
+	public static String PLAYLIST_MICROSERVICE_URL = "http://localhost:3002";
+	public static String DELETE_ALL_SONGS_ENDPOINT = "/deleteAllSongsFromDb";
 	
 	// Used to determine path that was called from within each REST route, you don't need to modify this
 	public static String getUrl(HttpServletRequest req) {
@@ -41,5 +47,33 @@ public class Utils {
 		}
 		
 		return response;
+	}
+	
+	
+	/**
+	 * Delete song from user's favourite playlist.
+	 * 
+	 * @param songId  Id of song to delete.
+	 * @param client  Client used for HTTP requests.
+	 * @return        True if operation is successful, false otherwise.
+	 */
+	public static boolean deleteSongFromPlaylist(String songId, OkHttpClient client) {
+		Request playlistRequest = new Request.Builder()
+                .url(PLAYLIST_MICROSERVICE_URL + DELETE_ALL_SONGS_ENDPOINT + "/" + songId)
+                .put(emptyRequestBody)
+                .build();
+		
+		try {
+			Response response = client.newCall(playlistRequest).execute();
+			if (response.code() == 200) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (Exception e) {
+			return false;
+		}
+
+		
 	}
 }
