@@ -159,7 +159,7 @@ public class SongController {
 	 * Update a song's favourite count, whose id is songId.
 	 * 
 	 * @param songId           Id of song for which to update.
-	 * @param shouldDecrement  Determines wheter to increment or decrement.
+	 * @param shouldDecrement  Determines whether to increment or decrement.
 	 * @param request          Request sent to server.
 	 * @return                 Response sent to client.
 	 */

@@ -16,7 +16,7 @@ public class SongDalImpl implements SongDal {
 	/**
 	 * Constructs SongDalImpl object.
 	 * 
-	 * @param  mongoTemplate  Spring's builtin class for mongoDB operations 
+	 * @param  mongoTemplate  Spring's built in class for mongoDB operations 
 	 */
 	@Autowired
 	public SongDalImpl(MongoTemplate mongoTemplate) {
@@ -74,7 +74,7 @@ public class SongDalImpl implements SongDal {
 
 	
 	/**
-	 * Find song title in databasethat has songId.
+	 * Find song title in database that has songId.
 	 * 
 	 * @param  songId  Id of song for which we want to get its title
 	 * @return         Return success and song title if found, else returns not found status.

@@ -51,11 +51,11 @@ public class Utils {
 	
 	
 	/**
-	 * Delete song from user's favourited playlist.
+	 * Delete song from user's favourite playlist.
 	 * 
 	 * @param songId  Id of song to delete.
 	 * @param client  Client used for HTTP requests.
-	 * @return        True if operation is successful, false otherweise.
+	 * @return        True if operation is successful, false otherwise.
 	 */
 	public static boolean deleteSongFromPlaylist(String songId, OkHttpClient client) {
 		Request playlistRequest = new Request.Builder()
