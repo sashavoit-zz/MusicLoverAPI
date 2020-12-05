@@ -226,7 +226,6 @@ public class ProfileDriverImpl implements ProfileDriver {
 				}
 				
 			}catch(Exception e) {
-				e.printStackTrace();
 				//Exception occurred, query was unsuccessful
 				ifSuccessful = DbQueryExecResult.QUERY_ERROR_GENERIC;
 				data = null;
